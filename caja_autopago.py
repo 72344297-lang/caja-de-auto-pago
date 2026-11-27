@@ -1,19 +1,41 @@
 import sys, matplotlib.pyplot as plt, networkx as nx
 from matplotlib.patches import FancyArrowPatch
+#cambios
+# === Definición del DFA: Caja de Autopago (8 estados, 16 conexiones, 2 finales) ===
+states = {"q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7"}
+alphabet = {"c", "b", "m", "f"}
 
-# === Definición del DFA ===
-states = {"q0","q1","q2","q3","q4"}
-alphabet = {"a","b"}
-delta = {("q0","a"):"q1", 
-        ("q1","a"):"q4", 
-        ("q1","b"):"q4", 
-        ("q2","a"):"q0", 
-        ("q2","b"):"q1", 
-        ("q3","b"):"q2", 
-        ("q4","a"):"q4", 
-        ("q4","b"):"q4"}
+delta = {
+    # q0: Caja libre en espera
+    ("q0", "c"): "q1",
+    ("q0", "b"): "q2",
 
-q0, F = "q0", {"q4"}
+    # q1: Lectura de código (incluye bucle con 'c')
+    ("q1", "c"): "q1",
+    ("q1", "b"): "q2",
+    ("q1", "m"): "q3",
+    ("q1", "f"): "q4",
+
+    # q2: Validación de peso (incluye bucle con 'b')
+    ("q2", "b"): "q2",
+    ("q2", "c"): "q1",
+    ("q2", "m"): "q3",
+    ("q2", "f"): "q4",
+
+    # q3: Alerta por error de peso (incluye bucle con 'm')
+    ("q3", "m"): "q3",
+    ("q3", "b"): "q4",
+
+    # q4: Resumen y selección de pago
+    ("q4", "c"): "q1",
+    ("q4", "f"): "q5",
+
+    # q5: Procesando cobro automático -> 2 estados finales
+    ("q5", "b"): "q6",
+    ("q5", "f"): "q7"
+}
+
+q0, F = "q0", {"q6", "q7"}
 
 # === Simulación ===
 def run(s):
